@@ -1,160 +1,257 @@
-# Bookshelf — Product Challenge
+# Bookshelf
 
-Build a personal reading tracker where you search for books, organize them into shelves, track reading progress, set goals, and explore year-in-review statistics. Your reading life, beautifully organized.
+A personal reading tracker: search for books, organize them into shelves, track reading progress, set a yearly goal, and look back on your reading year.
 
-![Bookshelf preview](./preview.jpg)
+**Live URL:** _not deployed yet_
 
-*This is a design concept image, not the intended design. There's no Figma file — you make the design decisions.*
+<!-- TODO: add a screenshot once deployed:  ![Bookshelf library view](./screenshot.png) -->
 
-## The Challenge
+This is my solution to the [Frontend Mentor](https://www.frontendmentor.io) **Bookshelf** Product Challenge, built on the **frontend-only** path: no accounts, no backend. Everything lives in the browser.
 
-Bookshelf is a **Product Challenge** on [Frontend Mentor](https://www.frontendmentor.io). There's no Figma file — you make the design decisions. You ship a real, deployed product with a database, authentication, and external integrations. The result is a portfolio piece that demonstrates how you think, not just what you can build.
+---
 
-### Four Pillars
+## Overview
 
-| Pillar | What It Means for Bookshelf |
-|--------|----------------------------|
-| **Product Thinking** | You design the year-in-review experience, the book discovery flow, and the reading progress UX. No spec tells you exactly how — you decide. |
-| **Design Taste & Craft** | The brand kit gives you colors, type, and spacing. The layouts, interactions, and visual polish are yours. |
-| **AI Collaboration** | The project includes AI context files (`AGENTS.md`, `CLAUDE.md`) that give tools like Claude full project context. Lean into AI across planning, building, and polishing. |
-| **Shipping Real Products** | Deploy to a live URL. Real database. Real auth. Real book API integration with real-world data inconsistencies — missing covers, varied ISBNs, duplicate editions. |
+Opening the app drops you straight into a library pre-filled with 45 real books across shelves, with reading progress, ratings, notes and a yearly goal, so there is something to explore from the first click. From there you can:
 
-## What You're Building
+- **Find books** on Open Library by title, author or ISBN, and add them to any shelf in one action.
+- **Explore** what is trending, or add a hand-picked starter pack in one click.
+- **Organize** books across the three default shelves plus your own, and sort or filter any list.
+- **Track progress** on the book you are reading, and be asked, not told, when it is time to mark it finished.
+- **Set a yearly goal** and see whether you are ahead of, on, or behind pace.
+- **Review your year**: books per month, genres, standout reads, and a cover wall.
+- **Start over** whenever you like: clear the library, or restore the sample.
 
-A personal reading tracker where users:
+### Tech Stack
 
-- **Search for books** via the Open Library or Google Books API and add them to their library
-- **Organize into shelves** — "Want to Read", "Currently Reading", "Read", plus custom shelves
-- **Track reading progress** with page counts and visual progress indicators
-- **Set annual reading goals** and see whether they're on pace
-- **Explore year-in-review statistics** — books per month, genre breakdown, total pages, reading pace
-- **Browse a curated library** as a guest with 45 real books across 5 genres
+| Layer | Technology |
+|-------|-----------|
+| Framework | Vue 3 (Composition API, `<script setup>`) + Vite, TypeScript |
+| State | Pinia |
+| Persistence | IndexedDB via [`idb`](https://github.com/jakearchibald/idb), written through from an in-memory store |
+| Authentication | None (frontend-only path) |
+| Book API | [Open Library](https://openlibrary.org/developers/api) (search, works, trending, covers) |
+| Hosting | _TBD_ |
+| Styling | Tailwind CSS v4 with the brand-kit tokens, [reka-ui](https://reka-ui.com) primitives, `class-variance-authority`, Lucide icons |
+| Fonts | Lora (headings, reading text) and Inter (UI), self-hosted variable fonts |
+| Charts / viz | Hand-built with CSS and SVG, no charting library |
+| Testing | Vitest, Vue Test Utils, `fake-indexeddb` (118 tests) |
+| Lint / format | ESLint, oxlint, Prettier |
 
-### The Guest Experience
+---
 
-When you share this project — in your portfolio, a job application, or a social post — the person clicking your link isn't going to create an account. Guest mode is what lets them see your work instead of a login wall.
+## Design Decisions
 
-Your landing page includes a "Try as Guest" button. Guests get a fully populated library with 45 curated books across Fiction, Non-Fiction, Sci-Fi & Fantasy, Self-Improvement, and Tech & Programming — real covers, real metadata, books distributed across shelves with reading progress, ratings, and notes. The year-in-review statistics are pre-populated with compelling data. Visitors are _exploring a personal reading library_ from their first click.
+These are the product and design choices I made where the spec left room for interpretation.
 
-## Project Structure
+### Year-in-Review & Reading Insights
+
+<!-- TODO (author): the page below was built without a design conversation. Confirm or change the direction, then fill in the "why" and "differently" parts in your own words. -->
+
+**The problem I was solving:** raw numbers alone are not rewarding, and a light reader should not feel embarrassed next to a heavy one.
+
+**My approach:** a standalone page at `/stats` that opens with a "story" card rather than a table: a headline such as _"16 books read so far in 2026"_, a one-line reading of what that means, and the year-over-year change. Below it: books by month, a genre breakdown, "standout" reads (favorite, longest, shortest, fastest, slowest), author variety, and a wall of every cover finished that year. A year switcher (`?year=2025`) makes past years linkable. "Copy summary" puts a plain-text recap on the clipboard.
+
+- **Tone scales with the reader.** Copy changes with the count (one book gets _"Every reading year starts with one good book"_), and the current year says "so far".
+- **Nothing is claimed without evidence.** Superlatives appear only when there is something to compare (one book cannot be "the longest"), and a "busiest month" is named only when it truly stands out.
+- **A book counts for the year it was finished**, regardless of which shelf it sits on now.
+
+**Why I chose this approach:** <!-- TODO -->
+
+**What I'd do differently:** <!-- TODO -->
+
+### Book Discovery & Recommendations
+
+**The problem I was solving:** a search box is not discovery, and a brand-new reader with an empty library needs somewhere to start.
+
+**My approach:** a dedicated **Explore** page, plus hints woven into the places a reader would otherwise hit a dead end.
+
+- **Trending only.** Explore shows what readers are picking up on Open Library today, this week or this month. I deliberately left out "because you read X" and genre browsing for now: personalization needs data and tuning, and trending needs neither.
+- **Starter packs** solve the cold start. Five curated sets of six books (Classics, Sci-fi & fantasy, Big ideas, For developers, Short & satisfying) go into Want to Read in one click, skipping anything already owned. They come from the bundled sample catalog, so they work offline and always have real covers. For a small library the packs lead the page; otherwise trending does.
+- **Empty states point onward.** An empty library greets you with starter packs instead of a wall of zeros; an empty shelf and the empty search page both link to Explore.
+- **One click to add, one more to choose a shelf:** the same split button as search ("Want to Read" plus a shelf menu), and books already in the library show "On <shelf>" instead of an add button.
+
+**Why I chose this approach:** <!-- TODO -->
+
+**What I'd do differently:** <!-- TODO -->
+
+### Reading Progress Tracking UX
+
+**The problem I was solving:** progress tracking only works if updating it is nearly effortless.
+
+**My approach:** a single control on the book you are reading, shared by the detail view and the library overview.
+
+- An **"I'm on page ___"** field with quick **+10 / +25 / +50** buttons (percent-only books get **+5 / +10 / +25**), instead of a slider or session logging.
+- At 100% a **celebration card** appears ("You finished …", pages, days taken, star rating) with **Move to Read** and **Not yet**. The book is never moved automatically.
+- The only extra shown next to the bar is **pages left**. No ETA or pace forecast.
+- Updates are optimistic: the bar moves immediately and rolls back if saving fails.
+
+**Why I chose this approach:** <!-- TODO -->
+
+**What I'd do differently:** <!-- TODO -->
+
+### Other Design Choices
+
+- **Landing page:** a single "Open My Library" call to action, since the frontend-only path has no sign-up and no guest mode to choose between.
+- **Reading goal:** a progress ring with a tick marking where a steady reader would be today (24 books by 1 July is about 12). Within one book of that line counts as "on track". When behind, the page says how many books a month would catch you up. Finishing the goal gets its own celebration card, and a missing goal shows an invitation instead of an empty dashboard.
+- **Shelves:** reordering uses up/down buttons rather than drag-and-drop, which keeps it fully keyboard-accessible. Deleting a custom shelf moves its books to Want to Read, so nothing is ever lost with a shelf.
+- **Sort and filter live in the URL** (`?sort=rating&genre=Fiction`), so a view survives a reload, works with the back button, and can be shared. A virtual **All books** shelf applies the same controls across the whole library.
+- **A shared genre vocabulary.** Genres come from two very different sources (hand-curated sample data and messy Open Library subjects). One normalizer merges synonyms, folds over-specific tags into their parent, and resolves umbrella tags like "Sci-Fi & Fantasy" so books are not double-counted. It also migrates libraries saved by earlier versions.
+- **Dark mode** follows the system by default with a manual override, and the theme is resolved before first paint so there is no flash of the wrong one.
+- **Everything is reversible or confirmed.** Destructive actions (removing a book, deleting a shelf, clearing the library) ask first and say exactly what will be lost.
+
+---
+
+## Book Data: Handling a Messy API
+
+- **Rate limiting and caching:** requests to Open Library are throttled to one per second, cached in an LRU cache (15 minutes), time out after 10 seconds, and fail with typed errors that map to specific, human messages (offline, timeout, rate-limited, unavailable) rather than a generic "something went wrong".
+- **Missing covers** get a styled placeholder in a deterministic color per title. Large covers load progressively: the medium image shows first and the sharp one fades in over it.
+- **Duplicates:** a book's identity is matched by Open Library work, ISBN, or normalized title and author, so a different edition of a book you own is recognized.
+- **Messy fields:** author names in any of several formats are parsed into one; titles split from subtitles; descriptions have HTML entities and source sections stripped; page counts and ISBNs are optional everywhere.
+- **Percent-based progress** is the fallback for books with no page count.
+
+---
+
+## Accessibility
+
+Skip link; page headings take focus after navigation; native `<select>` and `<form>` controls where possible; visible focus rings; all interactive elements are real buttons or links; dialogs are focus-trapped (reka-ui); a polite live region announces changes (_"Added Dune to Want to Read"_, _"Goal set to 24 books"_) and result counts; charts expose their data as text; `prefers-reduced-motion` is respected.
+
+---
+
+## Development Journey
+
+<!-- TODO (author): these sections are yours to write. Prompts are in each comment. -->
+
+### Initial Approach vs. Final
+
+<!-- What was your initial plan? What changed as you built? -->
+
+### Decisions Reconsidered
+
+<!-- What seemed right at first but needed rethinking? -->
+
+### What Surprised Me
+
+<!-- What was harder or easier than expected? -->
+
+### Session Breakdown
+
+| Session | Focus | What I Accomplished |
+|---------|-------|-------------------|
+| 1 | | |
+
+---
+
+## AI Collaboration Reflection
+
+<!-- TODO (author): How you used AI, what worked, what you learned, and where you pushed back. This section is meant to be in your own voice. -->
+
+### How I Used AI
+
+### What Worked Well
+
+### What I Learned
+
+### Where I Pushed Back
+
+---
+
+## Differentiators
+
+<!-- TODO (author): none chosen yet. Pick 1-2 from the challenge's differentiators (e.g. Reading Statistics Dashboard builds on the year-in-review work) and describe them here. -->
+
+---
+
+## Self-Assessment
+
+<!-- TODO (author): rate honestly once deployed. Left blank on purpose: these are your judgments. -->
+
+| Category | Rating | Notes |
+|----------|--------|-------|
+| **Works for real users** | /5 | |
+| **Book API integration** | /5 | |
+| **Design-it-yourself features** | /5 | |
+| **Design quality** | /5 | |
+| **Responsive design** | /5 | |
+| **Performance** | /5 | |
+| **Accessibility** | /5 | |
+| **Edge case handling** | /5 | |
+| **Code quality** | /5 | |
+| **Landing page** | /5 | |
+| **Guest experience** | /5 | |
+
+### Lighthouse Scores
+
+_Not measured yet. Run Lighthouse on the deployed site._
+
+| Category | Score |
+|----------|-------|
+| Performance | |
+| Accessibility | |
+| Best Practices | |
+| SEO | |
+
+### Strengths
+
+<!-- TODO (author) -->
+
+### Areas for Improvement
+
+<!-- TODO (author) -->
+
+---
+
+## Known Limitations
+
+- **Single browser, single user.** Data lives in IndexedDB: no sync between devices, and clearing site data erases the library. (There is no export yet.)
+- **Not deployed**, and Lighthouse has not been run.
+- **Trending books arrive without page counts or ISBNs.** The description and genres are filled in after adding, but page count stays empty, so progress for those books is percent-based until it is set.
+- **Genre vocabulary is a hand-built mapping.** Unusual Open Library subjects fall through as-is, and a few merges (Mythology to Fantasy, Decision Making to Self-Improvement) are judgment calls.
+- **Shelves reorder with buttons, not drag-and-drop.**
+- **Not built yet (Stretch):** Goodreads CSV import, search within the library, editable genre tags, activity timeline, bulk actions.
+
+---
+
+## Running Locally
+
+Requires Node 24 (see `.nvmrc`).
+
+```bash
+git clone <this-repo>
+cd personal-reading-list
+npm install
+
+npm run dev          # start the dev server
+npm run test:unit    # run the tests
+npm run type-check   # vue-tsc
+npm run lint         # oxlint + eslint
+npm run build        # type-check + production build into dist/
+npm run preview      # serve the production build
+```
+
+### Environment Variables
+
+None. Open Library needs no API key and the app has no backend.
+
+### Project Layout
 
 ```
-bookshelf/
-├── spec/
-│   ├── product-definition.md      # What, who, why
-│   ├── core-requirements.md       # 19 features: 12 core + 7 stretch
-│   ├── design-challenges.md       # 3 features YOU design
-│   ├── technical-requirements.md  # Database, auth, Book API, deployment, performance
-│   └── differentiators.md         # 6 enhancements — pick 1-2
-├── guidance/
-│   ├── brand-kit.md               # Colors, typography, spacing, icons, mood
-│   ├── patterns.md                # UI/UX do's and don'ts
-│   └── accessibility.md           # WCAG checklist
-├── starter/
-│   ├── tokens.css                 # CSS custom properties
-│   └── tailwind.css               # Optional Tailwind v4 config
-├── data/
-│   ├── sample-books.json          # 45 curated books as JSON
-│   ├── sample-books.csv           # Same books in Goodreads CSV format
-│   └── README.md                  # Data edge case documentation
-├── AGENTS.md                      # AI collaboration context
-├── CLAUDE.md                      # Points to AGENTS.md
-└── README-template.md             # Template for your solution README
+src/
+├── components/     UI by feature: book, explore, goal, layout, search, shelf, stats, ui
+├── composables/    Reusable reactive logic (search, trending, browse state, theme…)
+├── data/           Sample-library seed and starter packs
+├── lib/            Pure, tested logic: stats, goal pace, genres, sorting, normalization…
+├── services/       Open Library client and the storage layer (IndexedDB / in-memory)
+├── stores/         The Pinia library store
+├── views/          One component per route
+└── __tests__/      Unit tests
+data/               Sample books (JSON + CSV)
 ```
 
-## Getting Started
+The storage layer sits behind a small `LibraryStorage` interface, so swapping IndexedDB for a remote database later means adding one implementation.
 
-1. **Read the spec** — Start with `spec/product-definition.md`, then `core-requirements.md`. Understand what you're building before you write code.
+---
 
-2. **Review the brand kit** — `guidance/brand-kit.md` gives you the visual foundation. The brand kit and preview image give you a solid design foundation. Use them as your starting point — or, if you have a clear design vision of your own, feel free to create your own brand kit and go in a different direction. The starter CSS tokens and optional Tailwind config are ready to use.
+## Acknowledgments
 
-3. **Explore the patterns** — `guidance/patterns.md` provides UI/UX do's and don'ts that will help you make strong design decisions without a Figma file.
-
-4. **Choose your stack** — This challenge is framework-agnostic. Next.js, Nuxt, SvelteKit, Remix, Astro — whatever you're most productive with. The recommended path is full-stack (database + auth), but there's a **frontend-only alternative** if you want to focus on UI/UX and frontend engineering — see `spec/technical-requirements.md` for details.
-
-5. **Set up your AI workflow** — This project is designed for AI collaboration. `AGENTS.md` and `CLAUDE.md` give AI tools full context about the project — specs, guidance, and collaboration approach. We recommend working with AI across every phase: planning, building, and polishing.
-
-6. **Pick your differentiators** — Read `spec/differentiators.md` and choose 1-2 that match your interests. These are what make the project _yours_.
-
-7. **Start building** — Begin with foundation (auth, database, book API integration), then layer in features. The core-requirements spec is your roadmap. Core features give you a solid product; Stretch features take it to the next level.
-
-8. **Document as you go** — Use `README-template.md` for your solution README. Record design decisions, technical trade-offs, and lessons learned as they happen, not after.
-
-## Working with AI
-
-Product Challenges are designed for AI collaboration. The `AGENTS.md` and `CLAUDE.md` files give AI tools like Claude, Cursor, and Copilot full project context — including the spec, brand kit, and collaboration guidelines. Load them at the start of each session.
-
-Lean on AI for implementation, but don't just accept what it gives you. The design decisions are yours, and so is the code quality — review what gets generated, understand it, and make sure it's something you'd be happy putting your name on. The three design-it-yourself features (year-in-review & reading insights, book discovery & recommendations, reading progress tracking UX) are where your product thinking matters most.
-
-## Your Solution Repo
-
-The `.gitignore` is pre-configured to exclude challenge reference files (`spec/`, `guidance/`, `AGENTS.md`, etc.) from your solution repo. These files are your development reference — they stay on your machine for AI sessions and planning, but they don't belong in the finished product.
-
-Your public repo should contain:
-
-- Your application code
-- Your completed README (rename `README-template.md` → `README.md`)
-- The sample data files (needed for the guest experience)
-- The starter tokens (consumed by your build)
-
-This is how real products work: you reference the spec during development, you ship the product.
-
-## Learning Outcomes
-
-By completing this challenge, you'll have demonstrated:
-
-- **API integration and data normalization** — Handling real-world book API inconsistencies: missing covers, varied ISBNs, duplicate editions, incomplete metadata
-- **Full-stack architecture** — Database schema design, API routes, server-side data fetching, client-side state management
-- **Product design** — Shelf organization, reading progress UX, goal tracking, year-in-review statistics, and book discovery
-- **Data visualization** — Charts, progress indicators, reading statistics, and a year-in-review experience that tells a story
-- **Real-world deployment** — Live URL, environment configuration, production error handling, API key management
-- **Design taste** — Typography pairing (serif + sans-serif), warm color palette, visual hierarchy, responsive book cover grids without a Figma reference
-
-## Key Design Moments
-
-These screens are where your design taste will be most visible:
-
-1. **Library / shelf view** — Where users spend 80% of their time. Book cover grids need visual rhythm, consistent spacing, and clear hierarchy between shelf sections.
-2. **Year-in-review / statistics** — The most shareable screen. Data visualization, bold typography, and a distinct visual treatment that feels like a special moment.
-3. **Landing page** — First impression. Book covers should be prominently featured. The warm, literary aesthetic should be evident within 2 seconds.
-
-## Deploying Your Project
-
-Product Challenges require a live, publicly accessible URL. Recommended hosts:
-
-- [Vercel](https://vercel.com/)
-- [Netlify](https://www.netlify.com/)
-- [Render](https://render.com/)
-- [Fly.io](https://fly.io/)
-
-Make sure your environment variables are configured correctly and no secrets are exposed. Test your deployed URL in an incognito window before submitting — especially the guest experience.
-
-For more guidance, see our [hosting guide](https://www.frontendmentor.io/guides/hosting-your-solution).
-
-## Submitting Your Solution
-
-Submit your solution on the platform for the rest of the community to see. Follow our [guide to submitting solutions](https://www.frontendmentor.io/guides/how-to-submit-solutions) for the full process.
-
-When submitting, you'll need:
-
-- **Live site URL** — Submit the URL to your guest experience (e.g., `your-app.vercel.app/guest`), not the landing page. This ensures our solution reporters analyse your product code rather than the homepage. Test in incognito first.
-- **Repository URL** — A public repo with your solution code and completed README
-
-For your retrospective, Product Challenges give you a lot to write about — design decisions, AI collaboration, technical trade-offs. Be specific about what you're proud of and where you'd like feedback. See our [guide to writing effective retrospectives](https://www.frontendmentor.io/guides/write-an-effective-retrospective) for tips.
-
-## Sharing Your Solution
-
-Product Challenges create portfolio pieces worth sharing beyond the platform:
-
-1. Share your solution page in the **#finished-projects** channel of our [community](https://www.frontendmentor.io/community).
-2. Post on LinkedIn or X — include both your live URL and repo link. The guest experience means anyone clicking your link sees the product immediately.
-3. Add it to your portfolio — see our [guide to using challenges in your portfolio](https://www.frontendmentor.io/guides/use-challenges-in-your-portfolio).
-4. Blog about your experience. The design decisions, AI collaboration journey, and technical challenges make for compelling content. Great platforms to write on are [dev.to](https://dev.to/), [Hashnode](https://hashnode.com/), and [CodeNewbie](https://community.codenewbie.org/).
-
-## Questions?
-
-If anything in the spec is unclear or you want to discuss the challenge, join our [Discord community](https://www.frontendmentor.io/community).
-
-## Got Feedback for Us?
-
-We love receiving feedback! If you have anything you'd like to mention, please email hi[at]frontendmentor[dot]io.
+Built as a [Frontend Mentor Product Challenge](https://www.frontendmentor.io). Book data and covers from [Open Library](https://openlibrary.org).
