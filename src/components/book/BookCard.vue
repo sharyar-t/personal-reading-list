@@ -9,6 +9,8 @@ defineProps<{
   book: LibraryBook
   /** Show the reading progress bar under the cover */
   showProgress?: boolean
+  /** Above the fold: load immediately at high priority instead of lazily */
+  eager?: boolean
 }>()
 </script>
 
@@ -19,6 +21,7 @@ defineProps<{
       :author="book.authors[0]"
       :src="book.coverUrl"
       decorative
+      :eager="eager"
       class="transition-[translate,box-shadow] duration-300 group-hover:-translate-y-1 group-hover:shadow-lg"
     />
     <ProgressBar

@@ -14,6 +14,9 @@ import { STARTER_PACKS } from '@/data/starterPacks'
 
 const library = useLibraryStore()
 
+// Covers visible at every breakpoint (see PREVIEW_VISIBILITY) in the first shelf are above
+// the fold, so they skip lazy loading. Hidden ones must stay lazy: eager would still fetch them.
+const EAGER_COVERS = 3
 const PREVIEW_SIZE = 6
 // Cover previews show 3 → 6 columns as space allows; extra covers are hidden, not squeezed
 const PREVIEW_VISIBILITY = ['', '', '', 'hidden sm:block', 'hidden md:block', 'hidden xl:block']
@@ -149,7 +152,7 @@ const stats = computed(() => {
       </section>
 
       <section
-        v-for="{ shelf, count, preview } in otherShelves"
+        v-for="({ shelf, count, preview }, shelfIndex) in otherShelves"
         :key="shelf.id"
         :aria-labelledby="`shelf-${shelf.id}`"
         class="space-y-4"
@@ -177,7 +180,7 @@ const stats = computed(() => {
           class="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 sm:gap-x-5 md:grid-cols-5 xl:grid-cols-6"
         >
           <li v-for="(book, index) in preview" :key="book.id" :class="PREVIEW_VISIBILITY[index]">
-            <BookCard :book="book" />
+            <BookCard :book="book" :eager="shelfIndex === 0 && index < EAGER_COVERS" />
           </li>
         </ul>
         <p
