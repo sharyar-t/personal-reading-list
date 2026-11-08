@@ -12,7 +12,7 @@ import { findDuplicate, type IdentitySource } from '@/lib/bookIdentity'
 import { normalizeGenres, sameGenres } from '@/lib/genres'
 import { computeProgress, type ProgressInput } from '@/lib/progress'
 import { foldText, slugify } from '@/lib/text'
-import { loadSeedLibrary } from '@/data/seed'
+import { buildSeedShelves, loadSeedLibrary } from '@/data/seed'
 import { openLibraryStorage, type LibraryStorage } from '@/services/storage'
 
 export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error'
@@ -148,10 +148,25 @@ export const useLibraryStore = defineStore('library', () => {
     }
   }
 
-  async function resetToSample() {
-    const snapshot = await loadSeedLibrary()
-    await storage.value?.replaceAll(snapshot)
+  /** Replaces everything — the user explicitly asked for this, so no rollback to keep. */
+  async function replaceLibrary(snapshot: LibrarySnapshot) {
+    if (!storage.value) throw new LibraryError('Your library isn’t open yet')
+    await storage.value.replaceAll(snapshot)
     hydrate(snapshot)
+  }
+
+  /** Back to the 45-book sample library, with its custom shelves and goal */
+  async function resetToSample() {
+    await replaceLibrary(await loadSeedLibrary())
+  }
+
+  /**
+   * An empty library: no books, progress or goals, and only the three default
+   * shelves. Stays empty after a reload (the store is marked as initialised).
+   */
+  async function startFresh() {
+    const shelves = buildSeedShelves(new Date()).filter((shelf) => shelf.isDefault)
+    await replaceLibrary({ books: [], shelves, progress: [], goals: [] })
   }
 
   /**
@@ -465,6 +480,7 @@ export const useLibraryStore = defineStore('library', () => {
     // actions
     init,
     resetToSample,
+    startFresh,
     addBook,
     moveBook,
     updateProgress,

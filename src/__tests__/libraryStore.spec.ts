@@ -65,6 +65,35 @@ describe('library store', () => {
     expect(stored.find((b) => b.id === first!.id)?.genres).toEqual(['Science Fiction'])
   })
 
+  it('starts fresh: empty library, default shelves only, and it stays empty after a reload', async () => {
+    const { library, storage } = await freshStore()
+    await library.startFresh()
+    expect(library.books).toHaveLength(0)
+    expect(library.sortedShelves.map((s) => s.id)).toEqual([
+      'currently-reading',
+      'want-to-read',
+      'read',
+    ])
+    expect(library.goals).toHaveLength(0)
+    expect(library.progressLog).toHaveLength(0)
+
+    setActivePinia(createPinia())
+    const reloaded = useLibraryStore()
+    await reloaded.init(storage)
+    expect(reloaded.books).toHaveLength(0)
+    expect(reloaded.status).toBe('ready')
+  })
+
+  it('restores the sample library after starting fresh', async () => {
+    const { library, storage } = await freshStore()
+    await library.startFresh()
+    await library.resetToSample()
+    expect(library.books).toHaveLength(45)
+    expect(library.sortedShelves).toHaveLength(5)
+    expect(library.currentGoal).toBeDefined()
+    expect((await storage.load())?.books).toHaveLength(45)
+  })
+
   it('adds books and refuses duplicates', async () => {
     const { library, storage } = await freshStore()
     const first = await library.addBook(newBook)
