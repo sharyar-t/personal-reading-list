@@ -51,6 +51,9 @@ const stats = computed(() => {
   <div class="space-y-12">
     <PageHeader title="Library" description="Everything you've read, are reading and want to read.">
       <template #actions>
+        <Button as-child variant="secondary">
+          <RouterLink :to="{ name: 'shelf', params: { shelfId: 'all' } }">All books</RouterLink>
+        </Button>
         <Button as-child>
           <RouterLink to="/search">Find books</RouterLink>
         </Button>
