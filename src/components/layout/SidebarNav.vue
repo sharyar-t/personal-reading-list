@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bookmark,
   ChartColumn,
+  Compass,
   Heart,
   Library,
   ListOrdered,
@@ -22,6 +23,7 @@ const library = useLibraryStore()
 
 const primaryLinks = [
   { to: '/library', label: 'Library', icon: Library },
+  { to: '/explore', label: 'Explore', icon: Compass },
   { to: '/search', label: 'Find books', icon: Search },
   { to: '/stats', label: 'Year in review', icon: ChartColumn },
   { to: '/goals', label: 'Reading goal', icon: Target },

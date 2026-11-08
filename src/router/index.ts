@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { title: 'Find books' },
     },
     {
+      path: '/explore',
+      name: 'explore',
+      component: () => import('@/views/ExploreView.vue'),
+      meta: { title: 'Explore' },
+    },
+    {
       path: '/shelves',
       name: 'manage-shelves',
       component: () => import('@/views/ManageShelvesView.vue'),
