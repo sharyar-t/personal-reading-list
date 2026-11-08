@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { ArrowRight, ChartColumn, Library, Search, Sparkles, TrendingUp } from '@lucide/vue'
 import AppLogo from '@/components/layout/AppLogo.vue'
 import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 import BookCover from '@/components/book/BookCover.vue'
 import { Button } from '@/components/ui/button'
+import { useLibraryStore } from '@/stores/library'
+import { sortForShelf } from '@/lib/books'
+import { computeGoalProgress, paceHeadline } from '@/lib/goal'
 
 // A handful of books from data/sample-books.json, hardcoded so the landing
 // bundle doesn't pull in the whole sample library.
@@ -33,17 +37,50 @@ const shelfBooks = [
   },
 ]
 
-const currentlyReading = {
-  title: 'Project Hail Mary',
-  author: 'Andy Weir',
-  cover: 'https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg',
-  page: 295,
-  pageCount: 476,
-}
-const readingPercent = Math.round((currentlyReading.page / currentlyReading.pageCount) * 100)
+// The two floating cards show the reader's real library (the sample one on a
+// first visit), so what the landing page promises matches what the app opens
+// with. Initialising the store here also warms it up: "Open My Library" is instant.
+const library = useLibraryStore()
+library.init()
 
-const goal = { read: 18, target: 24 }
-const goalPercent = Math.round((goal.read / goal.target) * 100)
+const ready = computed(() => library.status === 'ready')
+
+const reading = computed(() => {
+  if (!ready.value) return undefined
+  return sortForShelf(library.booksOn('currently-reading'), 'currently-reading')[0]
+})
+const readingPercent = computed(() => reading.value?.progress?.percent ?? 0)
+const readingDetail = computed(() => {
+  const progress = reading.value?.progress
+  if (!progress) return ''
+  const { pageCount } = reading.value!
+  return progress.currentPage !== null && pageCount
+    ? `p. ${progress.currentPage} of ${pageCount} · ${progress.percent}%`
+    : `${progress.percent}% read`
+})
+
+const goalYear = new Date().getFullYear()
+const goal = computed(() => {
+  if (!ready.value || !library.currentGoal) return null
+  return computeGoalProgress(library.currentGoal.target, library.finishedThisYear.length, goalYear)
+})
+const goalTone = computed(() => {
+  const status = goal.value?.status
+  if (status === 'behind') return { text: 'text-warning', bar: 'bg-warning' }
+  if (status === 'on-track') return { text: 'text-accent', bar: 'bg-progress' }
+  return { text: 'text-success', bar: 'bg-success' }
+})
+
+const showcaseCaption = computed(() => {
+  const parts = ['A preview of a Bookshelf library: five books on a shelf']
+  if (reading.value) {
+    parts.push(`${reading.value.title} in progress at ${readingPercent.value}%`)
+  }
+  if (goal.value) {
+    parts.push(`a yearly goal of ${goal.value.read} of ${goal.value.target} books`)
+  }
+  return parts.join(', ') + '.'
+})
 
 const features = [
   {
@@ -128,11 +165,7 @@ const features = [
 
         <!-- Product showcase -->
         <figure class="relative">
-          <figcaption class="sr-only">
-            A preview of a Bookshelf library: five books on a shelf, Project Hail Mary in progress
-            at {{ readingPercent }}%, and a yearly goal of {{ goal.read }} of
-            {{ goal.target }} books.
-          </figcaption>
+          <figcaption class="sr-only">{{ showcaseCaption }}</figcaption>
 
           <div aria-hidden="true">
             <div
@@ -160,26 +193,40 @@ const features = [
               class="relative h-3 rounded-sm bg-linear-to-b from-border to-bg-tertiary shadow-md"
             />
 
-            <!-- Floating cards -->
+            <!-- Floating cards: real data, with same-size placeholders while it loads -->
             <div class="mx-auto mt-8 grid max-w-lg gap-4 sm:grid-cols-2">
-              <div class="rounded-xl border border-border-subtle bg-surface p-4 shadow-lg">
+              <template v-if="!ready">
+                <div
+                  aria-hidden="true"
+                  class="h-31 animate-pulse rounded-xl border border-border-subtle bg-surface p-4 shadow-lg"
+                />
+                <div
+                  aria-hidden="true"
+                  class="h-31 animate-pulse rounded-xl border border-border-subtle bg-surface p-4 shadow-lg sm:mt-8"
+                />
+              </template>
+
+              <div
+                v-if="reading"
+                class="rounded-xl border border-border-subtle bg-surface p-4 shadow-lg"
+              >
                 <p class="text-xs font-semibold tracking-wider text-text-tertiary uppercase">
                   Currently reading
                 </p>
                 <div class="mt-3 flex gap-3">
                   <BookCover
-                    :title="currentlyReading.title"
-                    :author="currentlyReading.author"
-                    :src="currentlyReading.cover"
+                    :title="reading.title"
+                    :author="reading.authors[0]"
+                    :src="reading.coverUrl"
                     size="S"
                     eager
                     decorative
                     class="w-12 shrink-0"
                   />
                   <div class="min-w-0 flex-1">
-                    <p class="truncate font-heading font-semibold">{{ currentlyReading.title }}</p>
+                    <p class="truncate font-heading font-semibold">{{ reading.title }}</p>
                     <p class="truncate text-sm text-text-secondary">
-                      {{ currentlyReading.author }}
+                      {{ reading.authors[0] }}
                     </p>
                     <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-tertiary">
                       <div
@@ -188,16 +235,18 @@ const features = [
                       />
                     </div>
                     <p class="mt-1 text-xs text-text-tertiary tabular-nums">
-                      p. {{ currentlyReading.page }} of {{ currentlyReading.pageCount }} ·
-                      {{ readingPercent }}%
+                      {{ readingDetail }}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div class="rounded-xl border border-border-subtle bg-surface p-4 shadow-lg sm:mt-8">
+              <div
+                v-if="goal"
+                class="rounded-xl border border-border-subtle bg-surface p-4 shadow-lg sm:mt-8"
+              >
                 <p class="text-xs font-semibold tracking-wider text-text-tertiary uppercase">
-                  2026 reading goal
+                  {{ goalYear }} reading goal
                 </p>
                 <p class="mt-2 font-heading text-3xl font-bold tabular-nums">
                   {{ goal.read
@@ -207,11 +256,14 @@ const features = [
                 </p>
                 <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-tertiary">
                   <div
-                    class="h-full rounded-full bg-success"
-                    :style="{ width: `${goalPercent}%` }"
+                    class="h-full rounded-full"
+                    :class="goalTone.bar"
+                    :style="{ width: `${goal.percent}%` }"
                   />
                 </div>
-                <p class="mt-2 text-sm font-medium text-success">2 books ahead of pace</p>
+                <p class="mt-2 text-sm font-medium" :class="goalTone.text">
+                  {{ paceHeadline(goal) }}
+                </p>
               </div>
             </div>
           </div>
