@@ -11,6 +11,7 @@ import {
   Library,
   ListOrdered,
   Search,
+  Settings,
   Target,
   Users,
 } from '@lucide/vue'
@@ -74,5 +75,16 @@ const SHELF_ICONS: Record<string, Component> = {
         </li>
       </ul>
     </section>
+
+    <ul class="flex flex-col gap-1" role="list">
+      <li>
+        <NavItem
+          :to="{ name: 'settings' }"
+          label="Settings"
+          :icon="Settings"
+          :collapsed="collapsed"
+        />
+      </li>
+    </ul>
   </nav>
 </template>
