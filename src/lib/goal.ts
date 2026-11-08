@@ -88,3 +88,18 @@ export function describePace(progress: GoalProgress): string {
     }
   }
 }
+
+/** A few words for a compact card: "2 books ahead of pace", "Right on pace"… */
+export function paceHeadline(progress: GoalProgress): string {
+  const books = Math.max(1, Math.round(Math.abs(progress.difference)))
+  switch (progress.status) {
+    case 'complete':
+      return 'Goal complete'
+    case 'ahead':
+      return `${plural(books, 'book')} ahead of pace`
+    case 'on-track':
+      return 'Right on pace'
+    case 'behind':
+      return `${plural(books, 'book')} behind pace`
+  }
+}

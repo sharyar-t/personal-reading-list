@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeGoalProgress, describePace, yearElapsed } from '@/lib/goal'
+import { computeGoalProgress, describePace, paceHeadline, yearElapsed } from '@/lib/goal'
 
 const JULY_1 = new Date(2026, 6, 2) // ~half the year gone
 
@@ -55,5 +55,20 @@ describe('describePace', () => {
     expect(describePace(computeGoalProgress(24, 12, 2026, JULY_1))).toMatch(/Right on pace/)
     expect(describePace(computeGoalProgress(24, 9, 2026, JULY_1))).toMatch(/behind pace/)
     expect(describePace(computeGoalProgress(10, 10, 2026, JULY_1))).toMatch(/complete/)
+  })
+})
+
+describe('paceHeadline', () => {
+  it('is short and counts books correctly', () => {
+    expect(paceHeadline(computeGoalProgress(24, 15, 2026, JULY_1))).toBe('3 books ahead of pace')
+    expect(paceHeadline(computeGoalProgress(24, 12, 2026, JULY_1))).toBe('Right on pace')
+    expect(paceHeadline(computeGoalProgress(24, 9, 2026, JULY_1))).toBe('3 books behind pace')
+    expect(paceHeadline(computeGoalProgress(10, 10, 2026, JULY_1))).toBe('Goal complete')
+  })
+
+  it('never says "0 books" and uses the singular', () => {
+    expect(paceHeadline(computeGoalProgress(24, 13, 2026, new Date(2026, 6, 2)))).toMatch(
+      /^1 book ahead/,
+    )
   })
 })
