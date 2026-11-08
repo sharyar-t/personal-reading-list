@@ -9,6 +9,7 @@ import type {
   Shelf,
 } from '@/types/library'
 import { findDuplicate, type IdentitySource } from '@/lib/bookIdentity'
+import { normalizeGenres, sameGenres } from '@/lib/genres'
 import { computeProgress, type ProgressInput } from '@/lib/progress'
 import { foldText, slugify } from '@/lib/text'
 import { loadSeedLibrary } from '@/data/seed'
@@ -113,6 +114,7 @@ export const useLibraryStore = defineStore('library', () => {
           await storage.value.replaceAll(snapshot)
         }
         hydrate(snapshot)
+        await migrateGenres()
         status.value = 'ready'
       } catch (error) {
         console.error('[bookshelf] Failed to load library', error)
@@ -122,6 +124,28 @@ export const useLibraryStore = defineStore('library', () => {
       }
     })()
     return initPromise
+  }
+
+  /**
+   * Libraries saved before genres were normalised still carry overlapping
+   * tags ("Sci-Fi & Fantasy" + "Science Fiction"). Tidy them in place, once;
+   * a failed write just retries on the next load.
+   */
+  async function migrateGenres() {
+    const changed: LibraryBook[] = []
+    books.value = books.value.map((book) => {
+      const genres = normalizeGenres(book.genres)
+      if (sameGenres(genres, book.genres)) return book
+      const next = { ...book, genres }
+      changed.push(next)
+      return next
+    })
+    if (!changed.length) return
+    try {
+      await storage.value?.putBooks(plain(changed))
+    } catch (error) {
+      console.warn('[bookshelf] Could not save normalised genres', error)
+    }
   }
 
   async function resetToSample() {

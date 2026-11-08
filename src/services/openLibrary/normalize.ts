@@ -1,4 +1,5 @@
 import type { BookMetadata } from '@/types/library'
+import { normalizeGenres } from '@/lib/genres'
 import { cleanIsbn } from '@/lib/isbn'
 import { parseAuthors, splitTitle } from '@/lib/text'
 
@@ -88,7 +89,7 @@ export function subjectsToGenres(subjects: readonly string[] | undefined, max = 
   const isFiction = fiction > nonFiction
   const filtered = isFiction ? genres.filter((g) => g !== 'History' && g !== 'Science') : genres
   const top = isFiction ? 'Fiction' : nonFiction > 0 ? 'Non-Fiction' : null
-  return [...(top ? [top] : []), ...filtered].slice(0, max)
+  return normalizeGenres([...(top ? [top] : []), ...filtered]).slice(0, max)
 }
 
 // ── Descriptions ─────────────────────────────────────────────────────────

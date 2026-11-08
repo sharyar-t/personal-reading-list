@@ -1,4 +1,5 @@
 import type { BookMetadata, SampleBook } from '@/types/library'
+import { normalizeGenres } from './genres'
 import { cleanIsbn } from './isbn'
 import { parseAuthors, parseYear, splitTitle } from './text'
 
@@ -26,6 +27,6 @@ export function normalizeSampleBook(raw: SampleBook): BookMetadata {
     publishYear: parseYear(raw.publishedDate),
     publisher: cleanText(raw.publisher),
     description: cleanText(raw.description),
-    genres: [...new Set(raw.genres.map((genre) => genre.trim()).filter(Boolean))],
+    genres: normalizeGenres(raw.genres),
   }
 }

@@ -43,6 +43,28 @@ describe('library store', () => {
     expect(stored?.shelves).toHaveLength(5)
   })
 
+  it('normalises genres saved by an older version, in memory and in storage', async () => {
+    setActivePinia(createPinia())
+    const storage = await createIndexedDbStorage(`test-${++dbCounter}`)
+    const seeded = await useLibraryStore()
+      .init(storage)
+      .then(() => storage.load())
+    const [first, second] = seeded!.books
+    await storage.putBooks([
+      { ...first!, genres: ['Sci-Fi & Fantasy', 'Science Fiction', 'Cyberpunk'] },
+      { ...second!, genres: ['Memoir', 'Biography'] },
+    ])
+
+    setActivePinia(createPinia())
+    const library = useLibraryStore()
+    await library.init(storage)
+
+    expect(library.getBook(first!.id)?.genres).toEqual(['Science Fiction'])
+    expect(library.getBook(second!.id)?.genres).toEqual(['Biography & Memoir'])
+    const stored = (await storage.load())!.books
+    expect(stored.find((b) => b.id === first!.id)?.genres).toEqual(['Science Fiction'])
+  })
+
   it('adds books and refuses duplicates', async () => {
     const { library, storage } = await freshStore()
     const first = await library.addBook(newBook)
