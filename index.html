@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Bookshelf — Your reading life, beautifully organized</title>
+    <meta
+      name="description"
+      content="Track your reading, organize books into shelves, set goals and explore your year in books."
+    />
+    <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1512" media="(prefers-color-scheme: dark)" />
+    <link rel="preconnect" href="https://covers.openlibrary.org" crossorigin />
+    <script>
+      // Resolve the color theme before first paint to avoid a flash of the wrong theme.
+      // Must stay in sync with THEME_STORAGE_KEY in src/composables/useTheme.ts.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('bookshelf-theme')
+          var dark =
+            stored === 'dark' ||
+            ((!stored || stored === 'auto') &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light'
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
