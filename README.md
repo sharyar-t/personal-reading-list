@@ -182,16 +182,16 @@ Skip link; page headings take focus after navigation; native `<select>` and `<fo
 
 ### Lighthouse Scores
 
-<!-- TODO: re-measure on the deployed site after the accessibility/SEO fixes ship, then fill in. -->
+Measured against the deployed site (Chrome headless, Lighthouse defaults for mobile, `--preset=desktop` for desktop), one run per page on 2026-11-08. Scores move a few points run to run.
 
-_To be re-measured on the deployed site._
+| Page | Performance | Accessibility | Best Practices | SEO |
+|------|-------------|---------------|----------------|-----|
+| Landing, desktop | 100 | 100 | 100 | 100 |
+| Landing, mobile | 97 | 100 | 100 | 100 |
+| Library, desktop | 82 | 100 | 100 | 100 |
+| Library, mobile | 99 | 100 | 100 | 100 |
 
-| Category | Score |
-|----------|-------|
-| Performance | |
-| Accessibility | |
-| Best Practices | |
-| SEO | |
+The one soft spot is the desktop library (LCP about 3 s). Its largest element is a book cover, and Open Library serves covers through slow redirects: roughly 2.8 s of that is the image download itself. I removed the part I control (above-the-fold covers no longer lazy-load and are fetched at high priority, which cut the discovery delay from about 830 ms to about 150 ms), but the rest depends on Open Library.
 
 ### Strengths
 
@@ -207,6 +207,7 @@ _To be re-measured on the deployed site._
 
 - **Single browser, single user.** Data lives in IndexedDB: no sync between devices, and clearing site data erases the library. (There is no export yet.)
 - **Trending books arrive without page counts or ISBNs.** The description and genres are filled in after adding, but page count stays empty, so progress for those books is percent-based until it is set.
+- **Cover loading speed depends on Open Library.** Covers redirect through archive.org and can take around 3 seconds, so the library's largest contentful paint is slower on desktop. Fixing it properly would need an image proxy or CDN in front of the covers.
 - **Genre vocabulary is a hand-built mapping.** Unusual Open Library subjects fall through as-is, and a few merges (Mythology to Fantasy, Decision Making to Self-Improvement) are judgment calls.
 - **Shelves reorder with buttons, not drag-and-drop.**
 - **Not built yet (Stretch):** Goodreads CSV import, search within the library, editable genre tags, activity timeline, bulk actions.
