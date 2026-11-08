@@ -104,12 +104,10 @@ export function computeYearStats(
     slot.count += 1
     slot.pages += book.pageCount ?? 0
   }
-  // First of equals wins, so ties favour the earlier month
-  const busiestMonth = extremes(
-    months.filter((m) => m.count > 0),
-    (m) => m.count,
-    'max',
-  )
+  // Only worth naming when it stands out: three or more months tied is just a steady pace
+  const peak = Math.max(0, ...months.map((m) => m.count))
+  const peakMonths = months.filter((m) => m.count === peak && peak > 0)
+  const busiestMonth = peakMonths.length > 0 && peakMonths.length < 3 ? peakMonths[0]! : null
 
   const genreCounts = new Map<string, number>()
   for (const book of finished) {

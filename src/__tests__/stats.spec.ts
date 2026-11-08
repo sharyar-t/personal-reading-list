@@ -64,7 +64,7 @@ describe('computeYearStats', () => {
     expect(stats.booksWithoutPages).toBe(1)
   })
 
-  it('buckets books by month and finds the busiest, earlier month winning ties', () => {
+  it('buckets books by month and finds the busiest, earlier month winning a two-way tie', () => {
     const stats = computeYearStats(
       [
         book({ finishedAt: '2026-03-02T10:00:00.000Z' }),
@@ -78,6 +78,19 @@ describe('computeYearStats', () => {
     expect(stats.months).toHaveLength(12)
     expect(stats.months[2]!.count).toBe(2)
     expect(stats.busiestMonth?.month).toBe(2)
+  })
+
+  it('names no busiest month when three or more months tie', () => {
+    const stats = computeYearStats(
+      [
+        book({ finishedAt: '2026-01-05T10:00:00.000Z' }),
+        book({ finishedAt: '2026-02-05T10:00:00.000Z' }),
+        book({ finishedAt: '2026-03-05T10:00:00.000Z' }),
+      ],
+      2026,
+      NOW,
+    )
+    expect(stats.busiestMonth).toBeNull()
   })
 
   it('ranks genres once per book and breaks ties alphabetically', () => {
