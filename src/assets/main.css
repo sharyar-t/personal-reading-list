@@ -1,0 +1,77 @@
+@import '@fontsource-variable/lora';
+@import '@fontsource-variable/inter';
+@import '../../starter/tailwind.css';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Self-hosted variable fonts register as "Lora Variable" / "Inter Variable".
+ * Declared unlayered after tokens.css so it wins over the starter token values.
+ */
+:root {
+  --font-heading: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
+  --font-serif: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Placeholder cover palette (book covers missing from the API) */
+  --cover-1: #e8d9c4;
+  --cover-2: #d5dfd0;
+  --cover-3: #ddd5e3;
+  --cover-4: #e7d0c9;
+  --cover-5: #d0dce3;
+}
+
+:root[data-theme='dark'] {
+  --cover-1: #3b3026;
+  --cover-2: #2c3529;
+  --cover-3: #332c3a;
+  --cover-4: #3b2a25;
+  --cover-5: #27323a;
+}
+
+@theme {
+  --color-cover-1: var(--cover-1);
+  --color-cover-2: var(--cover-2);
+  --color-cover-3: var(--cover-3);
+  --color-cover-4: var(--cover-4);
+  --color-cover-5: var(--cover-5);
+  --spacing-sidebar-collapsed: 4.5rem;
+}
+
+@layer base {
+  html {
+    @apply bg-bg-primary font-sans text-text-primary antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading text-balance;
+  }
+
+  :focus-visible {
+    @apply rounded-sm outline-2 outline-offset-2 outline-accent;
+  }
+
+  ::selection {
+    @apply bg-accent-subtle text-text-primary;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Programmatic focus targets (route change) shouldn't show a focus ring */
+[tabindex='-1']:focus-visible {
+  outline: none;
+}
