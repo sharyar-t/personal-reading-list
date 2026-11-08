@@ -8,6 +8,7 @@ import {
   ChartColumn,
   Heart,
   Library,
+  ListOrdered,
   Search,
   Target,
   Users,
@@ -58,6 +59,14 @@ const SHELF_ICONS: Record<string, Component> = {
             :label="shelf.name"
             :icon="SHELF_ICONS[shelf.id] ?? BookMarked"
             :count="library.status === 'ready' ? library.countFor(shelf.id) : undefined"
+            :collapsed="collapsed"
+          />
+        </li>
+        <li>
+          <NavItem
+            :to="{ name: 'manage-shelves' }"
+            label="Manage shelves"
+            :icon="ListOrdered"
             :collapsed="collapsed"
           />
         </li>

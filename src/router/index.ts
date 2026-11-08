@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { title: 'Find books' },
     },
     {
+      path: '/shelves',
+      name: 'manage-shelves',
+      component: () => import('@/views/ManageShelvesView.vue'),
+      meta: { title: 'Manage shelves' },
+    },
+    {
       path: '/shelves/:shelfId',
       name: 'shelf',
       component: () => import('@/views/ShelfView.vue'),
