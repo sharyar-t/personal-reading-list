@@ -10,6 +10,14 @@
  * Declared unlayered after tokens.css so it wins over the starter token values.
  */
 :root {
+  /*
+   * The brand kit's tertiary text (#8c8278 light, #7a716a dark) measures only
+   * 3.6:1 and 3.8:1 against the page background, below the 4.5:1 WCAG AA
+   * minimum for small text. These are the nearest values that pass on the
+   * page, card and tinted backgrounds, keeping the same warm hue.
+   */
+  --color-text-tertiary: #72685e;
+
   --font-heading: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
   --font-serif: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
@@ -23,6 +31,8 @@
 }
 
 :root[data-theme='dark'] {
+  --color-text-tertiary: #9a918a;
+
   --cover-1: #3b3026;
   --cover-2: #2c3529;
   --cover-3: #332c3a;
