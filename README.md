@@ -2,9 +2,9 @@
 
 A personal reading tracker: search for books, organize them into shelves, track reading progress, set a yearly goal, and look back on your reading year.
 
-**Live URL:** _not deployed yet_
+**Live URL:** <https://personal-reading-list-phi.vercel.app/> · jump straight in at [`/library`](https://personal-reading-list-phi.vercel.app/library)
 
-<!-- TODO: add a screenshot once deployed:  ![Bookshelf library view](./screenshot.png) -->
+![Bookshelf library view](./screenshot.png)
 
 This is my solution to the [Frontend Mentor](https://www.frontendmentor.io) **Bookshelf** Product Challenge, built on the **frontend-only** path: no accounts, no backend. Everything lives in the browser.
 
@@ -31,7 +31,7 @@ Opening the app drops you straight into a library pre-filled with 45 real books 
 | Persistence | IndexedDB via [`idb`](https://github.com/jakearchibald/idb), written through from an in-memory store |
 | Authentication | None (frontend-only path) |
 | Book API | [Open Library](https://openlibrary.org/developers/api) (search, works, trending, covers) |
-| Hosting | _TBD_ |
+| Hosting | Vercel (static SPA with a rewrite to `index.html`, see `vercel.json`) |
 | Styling | Tailwind CSS v4 with the brand-kit tokens, [reka-ui](https://reka-ui.com) primitives, `class-variance-authority`, Lucide icons |
 | Fonts | Lora (headings, reading text) and Inter (UI), self-hosted variable fonts |
 | Charts / viz | Hand-built with CSS and SVG, no charting library |
@@ -182,7 +182,9 @@ Skip link; page headings take focus after navigation; native `<select>` and `<fo
 
 ### Lighthouse Scores
 
-_Not measured yet. Run Lighthouse on the deployed site._
+<!-- TODO: re-measure on the deployed site after the accessibility/SEO fixes ship, then fill in. -->
+
+_To be re-measured on the deployed site._
 
 | Category | Score |
 |----------|-------|
@@ -204,7 +206,6 @@ _Not measured yet. Run Lighthouse on the deployed site._
 ## Known Limitations
 
 - **Single browser, single user.** Data lives in IndexedDB: no sync between devices, and clearing site data erases the library. (There is no export yet.)
-- **Not deployed**, and Lighthouse has not been run.
 - **Trending books arrive without page counts or ISBNs.** The description and genres are filled in after adding, but page count stays empty, so progress for those books is percent-based until it is set.
 - **Genre vocabulary is a hand-built mapping.** Unusual Open Library subjects fall through as-is, and a few merges (Mythology to Fantasy, Decision Making to Self-Improvement) are judgment calls.
 - **Shelves reorder with buttons, not drag-and-drop.**
