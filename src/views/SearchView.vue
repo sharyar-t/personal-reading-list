@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
-import { BookX, CloudOff, LoaderCircle, Search, X } from '@lucide/vue'
+import { BookX, CloudOff, Compass, LoaderCircle, Search, X } from '@lucide/vue'
+import { RouterLink } from 'vue-router'
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -193,6 +194,10 @@ function clear() {
       :icon="Search"
       title="What are you reading next?"
       description="Try a title like “Piranesi”, an author like “Ursula K. Le Guin”, or paste an ISBN."
-    />
+    >
+      <Button as-child variant="secondary">
+        <RouterLink to="/explore"><Compass aria-hidden="true" />Or see what's trending</RouterLink>
+      </Button>
+    </EmptyState>
   </div>
 </template>

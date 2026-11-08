@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { ArrowRight } from '@lucide/vue'
+import { ArrowRight, Compass } from '@lucide/vue'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import { Button } from '@/components/ui/button'
 import BookCard from '@/components/book/BookCard.vue'
 import BookGridSkeleton from '@/components/book/BookGridSkeleton.vue'
 import CurrentlyReadingCard from '@/components/book/CurrentlyReadingCard.vue'
+import StarterPackCard from '@/components/explore/StarterPackCard.vue'
 import { useLibraryStore } from '@/stores/library'
 import { sortForShelf } from '@/lib/books'
+import { STARTER_PACKS } from '@/data/starterPacks'
 
 const library = useLibraryStore()
 
@@ -60,7 +62,37 @@ const stats = computed(() => {
       </template>
     </PageHeader>
 
-    <template v-if="library.status === 'ready'">
+    <!-- Brand-new (or emptied) library: a first shelf in one click beats a wall of zeros -->
+    <section
+      v-if="library.status === 'ready' && library.books.length === 0"
+      aria-labelledby="first-shelf"
+      class="space-y-6"
+    >
+      <div class="max-w-xl space-y-2">
+        <h2 id="first-shelf" class="text-2xl font-bold">Let's fill your first shelf</h2>
+        <p class="text-text-secondary">
+          Start with a hand-picked set — one click adds the lot to Want to Read — or look for
+          something specific.
+        </p>
+        <div class="flex flex-wrap gap-2 pt-1">
+          <Button as-child variant="secondary">
+            <RouterLink to="/explore"
+              ><Compass aria-hidden="true" />Explore trending books</RouterLink
+            >
+          </Button>
+          <Button as-child variant="ghost">
+            <RouterLink to="/search">Search for a book</RouterLink>
+          </Button>
+        </div>
+      </div>
+      <ul role="list" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <li v-for="pack in STARTER_PACKS.slice(0, 3)" :key="pack.id">
+          <StarterPackCard :pack="pack" />
+        </li>
+      </ul>
+    </section>
+
+    <template v-else-if="library.status === 'ready'">
       <dl class="grid grid-cols-3 gap-3 sm:gap-4">
         <div
           v-for="stat in stats"

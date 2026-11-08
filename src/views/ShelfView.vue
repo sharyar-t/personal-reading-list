@@ -92,9 +92,14 @@ useTitle(() => `${pageTitle.value} · Bookshelf`)
       title="This shelf is waiting for its first book"
       description="Search for a book and place it here — it'll show up right away."
     >
-      <Button as-child>
-        <RouterLink to="/search">Find books</RouterLink>
-      </Button>
+      <div class="flex flex-wrap justify-center gap-2">
+        <Button as-child>
+          <RouterLink to="/search">Find books</RouterLink>
+        </Button>
+        <Button as-child variant="secondary">
+          <RouterLink to="/explore">Explore trending</RouterLink>
+        </Button>
+      </div>
     </EmptyState>
   </div>
 
